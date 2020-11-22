@@ -7,15 +7,13 @@
 #include <cstdlib>
 
 using namespace std;
-
 vector<string> words;
+
+mt19937 generator(time(nullptr));
+uniform_int_distribution<> distribution;
 
 string generateString(int wordCount){
     string poggerString;
-
-    random_device randomDevice;
-    mt19937 generator(randomDevice());
-    uniform_int_distribution<mt19937::result_type> distribution(0, words.size());
 
     for (int i = 0; i < wordCount; ++i){
         poggerString += words[distribution(generator)];
@@ -68,14 +66,13 @@ int main(){
     }
     wordsFile.close();
 
+    distribution = uniform_int_distribution<>(0, words.size() - 1);
+
     while (true){
         string phrase;
         if (s != "quotes"){
             phrase = generateString(stoi(s));
         } else {
-            random_device randomDevice;
-            mt19937 generator(randomDevice());
-            uniform_int_distribution<mt19937::result_type> distribution(0, words.size());
             phrase = words[distribution(generator)];
         }
 		
