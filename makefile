@@ -1,2 +1,2 @@
 typer: typer.cpp
-	g++ -O2 typer.cpp -o typer 
+	g++ -O1 typer.cpp -o typer 

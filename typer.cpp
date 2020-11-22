@@ -43,11 +43,11 @@ int main(){
 	
     cout << "Type in the amount of words you want to type: (type \"quotes\" for quotes)" << endl;
     string s;
-    cin >> s;
+    getline(cin, s);
 
     while (s != "quotes" && (!(s.find_first_not_of("0123456789") == string::npos) || s == "0")){
         cout << "Please enter a positive non-zero integer." << endl;
-        cin >> s;
+        getline(cin, s);
     }
 
     ifstream wordsFile;
@@ -70,10 +70,10 @@ int main(){
 
     while (true){
         string phrase;
-        if (s != "quotes"){
-            phrase = generateString(stoi(s));
-        } else {
+        if (s == "quotes"){
             phrase = words[distribution(generator)];
+        } else {
+            phrase = generateString(stoi(s));
         }
 		
         #ifdef _WIN32
@@ -89,8 +89,10 @@ int main(){
         int wordCount = occurrences.size() + 1;
         
         auto startTime = chrono::system_clock::now();
+        
         string userInput;
-        cin >> userInput;
+        getline(cin, userInput);
+
         float timeTaken = (float)(chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now() - startTime).count())/1000;
 
         cout << "Time taken: " << timeTaken << "s" << endl;
@@ -113,8 +115,6 @@ int main(){
         }
         cout << "Mistyped characters: " << errors << endl;
         errors = 0;
-        
-		cout << phrase << endl;
 		this_thread::sleep_for(chrono::seconds(1));
     }
 }
