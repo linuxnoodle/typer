@@ -36,7 +36,13 @@ void findAllOccurances(std::vector<size_t> & vec, std::string data, std::string 
 }
 
 int main(){
-    cout << "\033[2J\033[1;1H";
+	
+    #ifdef _WIN32
+		system("cls");
+	#else
+		system("clear");
+	#endif
+	
     cout << "Type in the amount of words you want to type: (type \"quotes\" for quotes)" << endl;
     string s;
     cin >> s;
@@ -72,8 +78,13 @@ int main(){
             uniform_int_distribution<mt19937::result_type> distribution(0, words.size());
             phrase = words[distribution(generator)];
         }
-        
-        cout << "\033[2J\033[1;1H";
+		
+        #ifdef _WIN32
+			system("cls");
+		#else
+			system("clear");
+		#endif
+		
         cout << "\033[0;32m" << phrase << "\033[0m" << endl;
 
         vector<size_t> occurrences;
@@ -106,6 +117,6 @@ int main(){
         cout << "Errors: " << errors << endl;
         errors = 0;
         
-        this_thread::sleep_for(chrono::seconds(1));
+		this_thread::sleep_for(chrono::seconds(1));
     }
 }
