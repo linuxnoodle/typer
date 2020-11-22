@@ -31,7 +31,7 @@ void findAllOccurances(std::vector<size_t> & vec, std::string data, std::string 
 
     while (pos != string::npos){
         vec.push_back(pos);
-        pos =data.find(toSearch, pos + toSearch.size());
+        pos = data.find(toSearch, pos + toSearch.size());
     }
 }
 
@@ -114,9 +114,10 @@ int main(){
                 }
             }
         }
-        cout << "Errors: " << errors << endl;
+        cout << "Mistyped characters: " << errors << endl;
         errors = 0;
         
+		cout << phrase << endl;
 		this_thread::sleep_for(chrono::seconds(1));
     }
 }
