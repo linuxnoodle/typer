@@ -9,3 +9,4 @@ or go to [here](https://github.com/linuxnoodle/typer/releases).
 ## TODO
 - Store quotes.txt and words.txt in %appdata% or $XDG_HOME.
 - Rework typing system, as having it based on the entire phrase makes typing error prone.
+- Clean up code, as it is currently bodged together.
