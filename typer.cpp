@@ -109,7 +109,7 @@ int main(){
         string userInput;
         getline(cin, userInput);
 
-        float timeTaken = (chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now() - startTime).count())/1000f;
+        float timeTaken = (chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now() - startTime).count())/1000;
 
         cout << "\033[0;32m" << "Time taken: " << timeTaken << "s" << "\033[0m" << endl;
         cout << "\033[0;32m" << "Raw WPM: " << wordCount/(timeTaken/60) << "\033[0m" << endl;
