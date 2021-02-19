@@ -3,27 +3,33 @@
 #include <random>
 #include <string>
 #include <chrono>
-#include <thread>
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
 #include <unistd.h>
 #include <sys/types.h>
-#include <pwd.h>
-#include <filesystem>
+
+#ifdef _WIN32
+  #include <windows.h>
+#endif
+
+#ifdef linux
+  #include <pwd.h>
+  #include <filesystem>
+#endif
 
 using namespace std;
 
 vector<string> words;
 
-random_device device;
-mt19937 generator(device());
+// For some reason, when using a random device as a seed for a generator on windows, it always gives the same value.
+// So, I just give the time as a seed.
+mt19937 generator(time(0));
 uniform_int_distribution<mt19937::result_type> distribution;
 
 // Grabs random words from the vector "words", and concatenates them together; delimited with a space;
 string generateString(int wordCount){
     string generated;
-
     for (int i = 0; i < wordCount; ++i){
         generated += words[distribution(generator)];
         if (i != wordCount - 1){
@@ -39,25 +45,39 @@ int main(){
     cout << "\x1B[0;0H";
 
     cout << "Enter the amount of words you want to type: (type \"quotes\" for quotes)\n";
-    string s = "a";
+    string s = "bruh";
     
     // Makes sure user input is valid.
     while (s != "quotes" && (!(s.find_first_not_of("0123456789") == string::npos) || s == "0")){
-        cout << "\033[0;32mPlease enter a positive non-zero integer.\033[0m\n";
+        #ifdef _WIN32
+            cout << "Please enter a positive non-zero integer.\n";
+        #else
+            cout << "\033[0;32mPlease enter a positive non-zero integer.\033[0m\n";
+        #endif
         getline(cin, s, '\n');
     }
 
     ifstream wordsFile;
-
-    struct passwd *pw = getpwuid(getuid());
-    char *HOME= pw->pw_dir;
+    
+    #ifdef _WIN32
+        char *path = getenv("appdata");
+        if (s == "quotes"){
+            strcat(path, "\\quotes.txt"); 
+        } else {
+            strcat(getenv("appdata"), "\\words.txt"); 
+        }   
+    #else
+        struct passwd *pw = getpwuid(getuid());
+        char *path = pw->pw_dir;
+        if (s == "quotes"){
+            strcat(path, "/.local/share/quotes.txt");
+        } else {
+            strcat(path, "/.local/share/words.txt");
+        } 
+    #endif
 
     // Reads file into the vector "words".
-    if (s == "quotes"){
-        wordsFile = ifstream(strcat(HOME, "/.local/share/quotes.txt"));
-    } else {
-        wordsFile = ifstream(strcat(HOME, "/.local/share/words.txt"));
-    }
+    wordsFile = ifstream(path);
 
     if (!wordsFile){
         if (s == "quotes"){
@@ -66,14 +86,28 @@ int main(){
             wordsFile = ifstream("words.txt");
         }
         if (!wordsFile){
-            cerr << "Error: quotes and/or words file is missing. Put \"words.txt\" and \"quotes.txt\" in ~/.local/share/\n";
+            #ifdef _WIN32
+                cerr << "Error: quotes and/or words file is missing. Put \"words.txt\" and \"quotes.txt\" in \%appdata\%\\Roaming\\\n";
+            #else
+                cerr << "Error: quotes and/or words file is missing. Put \"words.txt\" and \"quotes.txt\" in ~/.local/share/\n";
+            #endif
             return -1;
         } else {
-            if (s == "quotes"){
-                filesystem::rename("quotes.txt", HOME);
-            } else {
-                filesystem::rename("words.txt", HOME);
-            }
+            #ifdef _WIN32
+                // Moving the files in windows doesn't appear to work, but at the very least, 
+                // there is no reason to move them in windows
+                if (s == "quotes"){
+                    MoveFile("quotes.txt", path);
+                } else {
+                    MoveFile("words.txt", path);
+                }
+            #else
+                if (s == "quotes"){
+                    filesystem::rename("quotes.txt", path);
+                } else {
+                    filesystem::rename("words.txt", path);
+                }
+            #endif
         }
     }
     if (wordsFile.is_open()){
@@ -99,8 +133,11 @@ int main(){
 
         // Displays phrase in green. 
         // (\033 is the escape character, 0;32 means green.)
-        cout << "\033[0;32m" << phrase << "\033[0m\n";
-        
+        #ifdef _WIN32
+            cout << phrase << "\n";
+        #else
+            cout << "\033[0;32m" << phrase << "\033[0m\n";
+        #endif
         // Splits phrase delimited by space, and finds wordcount. (Will be used to rework new typing system)
         vector<string> splitPhrase;
         istringstream iss(phrase);
@@ -112,16 +149,16 @@ int main(){
         
         int wordCount = splitPhrase.size();
         
-        // Starts timer to calculate WPM. Defined as auto as the type is honestly just way too long.
+        // Starts timer to calculate WPM.
         auto startTime = chrono::system_clock::now();
         
         string userInput;
         getline(cin, userInput, '\n');
         
-        float timeTaken = (chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now() - startTime).count())/1000;
+        float timeTaken = (chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now() - startTime).count());
         
-        cout << "\033[0;32mTime taken: " << timeTaken << "s\033[0m\n";
-        cout << "\033[0;32mRaw WPM: " << wordCount/(timeTaken/60) << "wpm\033[0m\n";
+        cout << "Time taken: " << timeTaken/1000 << "s\n";
+        cout << "Raw WPM: " << wordCount/(timeTaken/60000) << "wpm\n";
         
         // Calculates the amount of mistyped characters.
         // First, it checks if the size of the phrase typed and the actual phrase are the same, as if they aren't,
@@ -148,7 +185,11 @@ int main(){
         cout << "Mistyped characters: " << errors << "\n";
         errors = 0;
         
-        // Waits for a second so the user can actually read the output.
-        usleep(1000000);
+        // Waits for one second so that the user can actually read the output.
+        #ifdef _WIN32
+            Sleep(1000);
+        #else
+            usleep(1000000);
+        #endif
     }
 }
