@@ -13,7 +13,7 @@
   #include <windows.h>
 #endif
 
-#ifdef linux
+#ifdef __unix__
   #include <pwd.h>
   #include <filesystem>
 #endif
