@@ -41,8 +41,12 @@ string generateString(int wordCount){
 
 int main(){
     // Clears screen when first ran.
-    cout << "\x1B[2J"; 
-    cout << "\x1B[0;0H";
+    #ifdef _WIN32
+        system("cls");
+    #else
+        cout << "\x1B[2J"; 
+        cout << "\x1B[0;0H";
+    #endif
 
     cout << "Enter the amount of words you want to type: (type \"quotes\" for quotes)\n";
     string s = "bruh";
@@ -127,15 +131,15 @@ int main(){
         } else {
             phrase = generateString(stoi(s));
         }
-        
-        cout << "\x1B[2J";
-        cout << "\x1B[0;0H";
 
-        // Displays phrase in green. 
+        // Clears screen, then displays text in green. 
         // (\033 is the escape character, 0;32 means green.)
         #ifdef _WIN32
+            system("cls");
             cout << phrase << "\n";
         #else
+            cout << "\x1B[2J";
+            cout << "\x1B[0;0H";
             cout << "\033[0;32m" << phrase << "\033[0m\n";
         #endif
         // Splits phrase delimited by space, and finds wordcount. (Will be used to rework new typing system)
